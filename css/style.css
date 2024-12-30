@@ -83,18 +83,19 @@ section.calculator-container form {
   display: flex;
   align-items: center;
   gap: 1rem;
-
-  span {
-    background-color: white;
-    font-size: 1.5rem;
-    padding-block: 0.5rem;
-    padding-inline: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 0.5rem;
-  }
 }
 
-#cotizacion {
+span {
+  background-color: white;
+  font-size: 1.5rem;
+  padding-block: 0.5rem;
+  padding-inline: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+}
+
+#error-message {
+  margin-top: 1rem;
+  font-size: 1rem;
   font-weight: bold;
-  color: green;
-}
+    }
