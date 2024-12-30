@@ -19,7 +19,7 @@ const localStorageLastValue = localStorage.getItem("lastValue");
 
 const fetchDolarOficial = async () => {
   try {
-    const response = await fetch("../data/dolar.json");
+    const response = await fetch('https://genadeev.github.io/ProyectoFinal-FebboYapur/data/dolar.json');
     if (!response.ok) throw new Error("Error al obtener la cotización.");
     const data = await response.json();
     cotizacionHtml.textContent = data[0]?.sell ?? "N/A";
