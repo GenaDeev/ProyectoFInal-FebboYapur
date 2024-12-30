@@ -88,8 +88,8 @@ section.calculator-container form {
 span {
   background-color: white;
   font-size: 1.5rem;
-  padding-block: 0.5rem;
-  padding-inline: 1rem;
+  padding-block: 0.25rem;
+  padding-inline: 0.5rem;
   border: 1px solid #ccc;
   border-radius: 0.5rem;
 }
