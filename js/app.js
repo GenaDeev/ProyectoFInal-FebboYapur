@@ -1,22 +1,10 @@
 let montoImpuestos = 0;
-// Cotización constante, en un futuro podria ser un fetch a una api
-const cotizacion = 1042;
 
-// Impuestos al dia de hoy en Argentina
 const impuestos = [
-  {
-    name: "Ganancias",
-    id: "ganancias",
-    value: 0.3,
-  },
-  {
-    name: "Impuesto Pais",
-    id: "impuesto-pais",
-    value: 0.3,
-  },
+  { name: "Ganancias", id: "ganancias", value: 0.3 },
+  { name: "Impuesto Pais", id: "impuesto-pais", value: 0.3 },
 ];
 
-// Elementos HTML
 const form = {
   cotizacionHtml: document.getElementById("cotizacion"),
   userInput: document.getElementById("user-input"),
@@ -25,13 +13,25 @@ const form = {
   taxes: document.getElementById("taxes"),
 };
 
-// Desestructuracion
-const { cotizacionHtml,userInput, noTax, tax, taxes } = form;
+const { cotizacionHtml, userInput, noTax, tax, taxes } = form;
 
-// Verifica si se guardó el ultimo valor del usuario
 const localStorageLastValue = localStorage.getItem("lastValue");
 
-const process = (value) => {
+const fetchDolarOficial = async () => {
+  try {
+    const response = await fetch("../data/dolar.json");
+    if (!response.ok) throw new Error("Error al obtener la cotización.");
+    const data = await response.json();
+    cotizacionHtml.textContent = data[0]?.sell ?? "N/A";
+    return parseFloat(data[0]?.sell);
+  } catch (error) {
+    document.getElementById("error-message").textContent = error.message;
+    return null;
+  }
+};
+
+const process = (value, cotizacion) => {
+  if (!cotizacion) return;
   localStorage.setItem("lastValue", value);
   document.getElementById("result-container").classList.remove("hidden");
   montoImpuestos = 0;
@@ -53,30 +53,8 @@ const process = (value) => {
   });
 };
 
-// Evento al cambiar el valor del input
-userInput.addEventListener("input", (e) => process(e.target.value));
-
-// Inicia el calculo con el valor anterior del usuario guardado en localStorage
-addEventListener("DOMContentLoaded", () => {
-  if (localStorageLastValue) {
-    userInput.value = localStorageLastValue;
-    process(localStorageLastValue);
-  }
-});
-
-// Añade el valor de la cotización al HTML
-addEventListener("DOMContentLoaded", () => {
-  cotizacionHtml.innerHTML = cotizacion;
-});
-
-// Realiza los cálculos y devuelve los diferentes resultados
 const calculate = (value, cotizacion) => {
-  let data = {
-    notax: 0,
-    result: 0,
-    taxes: [],
-  };
-
+  let data = { notax: 0, result: 0, taxes: [] };
   if (!value) {
     impuestos.forEach((impuesto) => {
       impuesto.result = 0;
@@ -84,18 +62,40 @@ const calculate = (value, cotizacion) => {
     });
     return data;
   }
-
   montoImpuestos = 0;
-
   impuestos.forEach((impuesto) => {
     impuesto.result = cotizacion * value * impuesto.value;
     data.taxes.push(impuesto);
     montoImpuestos += impuesto.result;
   });
-
   const final = value * cotizacion + montoImpuestos;
-
   data.notax = value * cotizacion;
   data.result = final;
   return data;
 };
+
+const clearLocalStorage = async () => {
+  const { isConfirmed } = await Swal.fire({
+    title: "¿Estás seguro?",
+    text: "Esta acción eliminará el valor guardado.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Sí, borrar",
+    cancelButtonText: "Cancelar",
+  });
+  if (isConfirmed) {
+    localStorage.removeItem("lastValue");
+    Swal.fire("¡Borrado!", "El valor guardado ha sido eliminado.", "success");
+  }
+};
+
+document.getElementById("clear-storage").addEventListener("click", clearLocalStorage);
+
+addEventListener("DOMContentLoaded", async () => {
+  const cotizacionFetch = await fetchDolarOficial();
+  if (localStorageLastValue) {
+    userInput.value = localStorageLastValue;
+    process(localStorageLastValue, cotizacionFetch);
+  }
+});
+userInput.addEventListener("input", (e) => fetchDolarOficial().then((cotizacion) => process(e.target.value, cotizacion)));
